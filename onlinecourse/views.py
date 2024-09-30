@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
-# <HINT> Import any new Models here
-from .models import Course, Enrollment
+from .models import Course, Enrollment, Question, Choice, Submission
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
@@ -10,8 +9,16 @@ from django.contrib.auth import login, logout, authenticate
 import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
-# Create your views here.
 
+def submit(request, course_id):
+    course = get_object_or_404(Course, pk = course_id)
+    user = request.user
+    enrollment = Enrollment.objects.get(user = user, course = course)
+    submission = Submission.objects.create(enrollment = enrollment)
+    choices = extract_answers(request)
+    submission.choices.set(choices)
+    submission_id = submission.id
+    return HttpResponseRedirect(reverse(viewname = 'onlinecourse:exam_result', args = (course_id, submission_d)))
 
 def registration_request(request):
     context = {}
